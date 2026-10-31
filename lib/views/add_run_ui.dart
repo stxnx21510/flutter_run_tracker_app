@@ -112,7 +112,7 @@ class _AddRunUIState extends State<AddRunUI> {
                   ),
                 ),
                 SizedBox(
-                  height: 50,
+                  height: MediaQuery.of(context).size.height * 0.04,
                 ),
                 ElevatedButton(
                   onPressed: () {},
@@ -120,12 +120,41 @@ class _AddRunUIState extends State<AddRunUI> {
                     'บันทึกข้อมูล',
                     style: TextStyle(
                       color: Colors.white,
+                      //fontWeight: FontWeight.bold,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromARGB(255, 30, 143, 30),
-                    fixedSize:
-                        Size(MediaQuery.of(context).size.width * 0.5, 50),
+                    backgroundColor: const Color.fromARGB(255, 24, 179, 10),
+                    fixedSize: Size(
+                      MediaQuery.of(context).size.width,
+                      55.0,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.02,
+                ),
+                ElevatedButton(
+                  onPressed: () {},
+                  child: Text(
+                    'ยกเลิก',
+                    style: TextStyle(
+                      color: Colors.white,
+                      //fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 231, 40, 15),
+                    fixedSize: Size(
+                      MediaQuery.of(context).size.width,
+                      55.0,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
                   ),
                 ),
               ],

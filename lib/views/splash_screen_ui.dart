@@ -59,7 +59,7 @@ class _SplashScreenUIState extends State<SplashScreenUI> {
                   ),
                 ),
                 SizedBox(
-                  height: 50.0,
+                   height: MediaQuery.of(context).size.height * 0.05,
                 ),
                 CircularProgressIndicator(
                   color: Colors.white,
@@ -88,7 +88,7 @@ class _SplashScreenUIState extends State<SplashScreenUI> {
                   ),
                 ),
                 SizedBox(
-                  height: 50.0,
+                   height: MediaQuery.of(context).size.height * 0.05,
                 ),
               ],
             ),
