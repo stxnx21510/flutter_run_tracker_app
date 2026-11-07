@@ -57,7 +57,7 @@ class _ShowAllRunUIState extends State<ShowAllRunUI> {
               fit: BoxFit.cover,
             ),
             Text(
-              'วิงกันเถอะ',
+              'วิ่งกันเถอะ',
               style: TextStyle(
                 fontSize: MediaQuery.of(context).size.height * 0.0325,
                 fontWeight: FontWeight.bold,

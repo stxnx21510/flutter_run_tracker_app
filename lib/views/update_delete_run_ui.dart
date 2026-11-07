@@ -1,4 +1,3 @@
-
 // ignore_for_file: sort_child_properties_last
 
 import 'package:flutter/material.dart';
@@ -45,11 +44,6 @@ class _UpdateDeleteUIState extends State<UpdateDeleteUI> {
           child: Center(
             child: Column(
               children: [
-                // Icon(
-                //   Icons.add_a_photo,
-                //   size: MediaQuery.of(context).size.width * 0.35,
-                //   color: Colors.grey,
-                // ),
                 Image.asset(
                   'assets/images/speed.png',
                   height: MediaQuery.of(context).size.height * 0.2,
@@ -127,7 +121,6 @@ class _UpdateDeleteUIState extends State<UpdateDeleteUI> {
                     'บันทึกแก้ไขข้อมูล',
                     style: TextStyle(
                       color: Colors.white,
-                      //fontWeight: FontWeight.bold,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
