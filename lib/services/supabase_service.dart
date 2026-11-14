@@ -30,4 +30,27 @@ class SupabaseService {
   Future<void> insertRun(Run run) async {
     await supabase.from('run_tb').insert(run.toJson());
   }
+
+  //method ดึงข้อมูลจาก table ใน database supabase
+  Future<List<Run>> getAllRuns() async {
+    //ดึงข้อมูลจาก superbase
+    final response = await supabase.from('run_tb').select('*');
+    //เอาข้อมูลที่ดึงมา json เป็น object ใช้ใน project
+    return response.map((e) => Run.fromJson(e)).toList();
+  }
+
+  //method ลบไฟล์ใน bucket in storage supabase
+  Future<void> deleteImageFile(String fileName) async {
+    await supabase.storage.from('run_bk').remove([fileName]);
+  }
+
+  //method แก้ไขข้อมูลใน table in database supabase
+  Future<void> updateRun(Run run, String id) async {
+    await supabase.from('run_tb').update(run.toJson()).eq('id', id);
+  }
+
+  //method ลบข้อมูลใน table in database supabase
+  Future<void> deleteRun(String id) async {
+    await supabase.from('run_tb').delete().eq('id', id);
+  }
 }

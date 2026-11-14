@@ -1,30 +1,32 @@
-// ignore_for_file: unused_local_variable, use_build_context_synchronously, sort_child_properties_last, empty_statements
- 
-import 'dart:typed_data';
-import 'package:flutter/material.dart';
-import 'package:flutter_run_tracker_app/models/run.dart' show Run;
-import 'package:flutter_run_tracker_app/services/supabase_service.dart';
+// ignore_for_file: sort_child_properties_last
 
+import 'dart:typed_data';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_run_tracker_app/models/run.dart';
+import 'package:flutter_run_tracker_app/services/supabase_service.dart';
 import 'package:image_picker/image_picker.dart';
- 
+
 class AddRunUI extends StatefulWidget {
   const AddRunUI({super.key});
- 
+
   @override
   State<AddRunUI> createState() => _AddRunUIState();
 }
- 
+
 class _AddRunUIState extends State<AddRunUI> {
-  //----ส่วนของ code ที่เกียวกับ กล้อง , แกลลอรี่ และ
-  Uint8List? imageBytes; //เอาไว้เก็บรูป เพื่อแสดงที่หน้าจอ
-  XFile? imageFile; //เอาไว้เก็บรูป เพื่อ upload to bucket
- 
-  //เปิดกล้อง
+  // ----------- ส่วนของโค้ดที่เกี่ยวกับการเปิดกล้อง เปิดแกลอรี่ --------------
+  Uint8List? imageBytes; //เอาไว้เก็บรูปเพื่อแสดงที่หน้าจอ
+  XFile?
+      imageFile; //เอาไว้เก็บรูปเพื่อที่จะ upload ไปเก็บที่ bucket->storage->supabase
+
+  //เมธอดเปิดกล้อง
   Future<void> selectImageFromCamera() async {
+    //เปิด camera
     imageFile = await ImagePicker()
         .pickImage(source: ImageSource.camera, imageQuality: 80);
- 
-    //ตรวจสอบว่าได้เลือกมั้ย
+
+    //ตรวจสอบว่าได้ถ่ายไหม
     if (imageFile != null) {
       final byte = await imageFile!.readAsBytes();
       setState(() {
@@ -32,13 +34,14 @@ class _AddRunUIState extends State<AddRunUI> {
       });
     }
   }
- 
-  //เปิดแกลลอรี่
+
+  //เมธอดเปิดแกลอรี่
   Future<void> selectImageFromGallery() async {
+    //เปิด gallery
     imageFile = await ImagePicker()
         .pickImage(source: ImageSource.gallery, imageQuality: 80);
- 
-    //ตรวจสอบว่าได้เลือกมั้ย
+
+    //ตรวจสอบว่าได้เลือกไหม
     if (imageFile != null) {
       final byte = await imageFile!.readAsBytes();
       setState(() {
@@ -46,68 +49,85 @@ class _AddRunUIState extends State<AddRunUI> {
       });
     }
   }
- 
-  //----ส่วนของ code upload and save
- 
-  //ตัวแปรเก็บ file ที่ upload
+  // ---------------------------------------------------------------
+
+  //----------- ส่วนของโค้ดที่เกี่ยวกับการ upload และ save ข้อมูล -----------
+  // ตัวแปลสำหรับเก็บตำแหน่งไฟล์ที่อัปโหลดไปที่ supabase
   String imageURL = "";
-  //สร้างตัวควบคุม textfield
+
+  //สร้างตัวควบคุม TextField
   TextEditingController runWhereCtrl = TextEditingController();
   TextEditingController runPersonCtrl = TextEditingController();
   TextEditingController runDistanceCtrl = TextEditingController();
- 
+
   Future<void> uploadAndSaveData() async {
-    //ตรวจสอบว่าได้เลือกfileมั้ย
+    //upload file แต่ต้องตรวจสอบก่อนว่ามีไฟล์ที่จะอัปโหลดไหม
     if (imageFile != null) {
       imageURL = await SupabaseService().uploadImageFile(imageFile!);
     }
-    //save data to table (run_td)
-    //validate ว่า user ป้อนยัง
+
+    // save ข้อมูลลง table
+    // validate ว่าผู้ใช้ป้อนครบยัง
     if (runWhereCtrl.text.isEmpty ||
         runPersonCtrl.text.isEmpty ||
         runDistanceCtrl.text.isEmpty) {
-      //อันไหนว่าง เตือน
+      //อันไหนว่างแสดงเตือนใช้ SnackBar
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('กรุณากรอกข้อมูลให้ครบถ้วน'),
-          duration: Duration(seconds: 2),
+          content: Text(
+            'กรุณากรอกข้อมูลให้ครบถ้วน',
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
           backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
         ),
       );
-      return;
+
+      return; //*** อย่าลืม return
     }
-    // ผ่าน validate มา ก็ pack data เพื่อส่งไป table
+
+    //ผ่าน validate มาก็ไดก็มาแพ็คข้อมูลเพื่อส่งไปบันทึกลง table
     Run runData = Run(
       runWhere: runWhereCtrl.text,
       runPerson: runPersonCtrl.text,
       runDistance: int.parse(runDistanceCtrl.text),
       runImageUrl: imageURL,
     );
-    //ส่ง data to table
+
+    //ส่งข้อมูลที่แพ็คไปบันทึกลง table
     await SupabaseService().insertRun(runData);
-    //แจ้งเตือน
+
+    //หลังจากบันทึกเสร็จแสดงข้อความแจ้ง
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('บันทึกข้อมูลเรียบร้อย'),
-        duration: Duration(seconds: 2),
+        content: Text(
+          'อัปโหลดและบันทึกข้อมูลเรียบร้อยแล้ว',
+          style: TextStyle(
+            color: Colors.white,
+          ),
+        ),
         backgroundColor: Colors.green,
+        duration: Duration(seconds: 2),
       ),
     );
-    //กลับไปหน้า ShowAllRun
+
+    //แล้วย้อนกลับไปหน้า ShowAllRun()
     Navigator.pop(context);
   }
-  //-------------------------
- 
+  // ----------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // ส่วนของ appBar
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 16, 11, 87),
+        backgroundColor: const Color.fromARGB(255, 5, 1, 80),
         title: Text(
-          'RUN TRACKER (เพิ่ม)',
+          'Run Tracker (เพิ่ม)',
           style: TextStyle(
             color: Colors.white,
-            // fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
@@ -121,6 +141,7 @@ class _AddRunUIState extends State<AddRunUI> {
           ),
         ),
       ),
+      // ส่วนของ body
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsetsGeometry.only(
@@ -132,37 +153,41 @@ class _AddRunUIState extends State<AddRunUI> {
           child: Center(
             child: Column(
               children: [
+                //ใช้ ternary operator ->   _____ ? _____ : ______
                 imageBytes == null
                     ? InkWell(
+                        //หรือใช้ GestureDetector()
                         onTap: () {
-                          selectImageFromGallery();
+                          //เรียกใช้งานเมธอดเปิดกล้อง หรือเปิดแกลอรี่
+                          selectImageFromCamera();
                         },
                         child: Icon(
                           Icons.add_a_photo,
-                          size: MediaQuery.of(context).size.width * 0.35,
+                          size: MediaQuery.of(context).size.width * 0.50,
                           color: Colors.grey,
                         ),
                       )
                     : InkWell(
+                        //หรือใช้ GestureDetector()
                         onTap: () {
-                          selectImageFromGallery();
+                          //เรียกใช้งานเมธอดเปิดกล้อง หรือเปิดแกลอรี่
+                          selectImageFromCamera();
                         },
                         child: Image.memory(
                           imageBytes!,
-                          width: MediaQuery.of(context).size.width * 0.35,
-                          height: MediaQuery.of(context).size.width * 0.35,
+                          width: MediaQuery.of(context).size.width * 0.50,
+                          height: MediaQuery.of(context).size.width * 0.50,
                           fit: BoxFit.cover,
                         ),
                       ),
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.035,
+                  height: 30,
                 ),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     'วิ่งที่ไหน',
                     style: TextStyle(
-                      color: const Color.fromARGB(255, 0, 0, 0),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -171,20 +196,19 @@ class _AddRunUIState extends State<AddRunUI> {
                   controller: runWhereCtrl,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    hintText: 'เช่น สวนหลวง...',
+                    hintText: 'เช่น สวนหลวง, .....',
                   ),
                 ),
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.015,
+                  height: 20,
                 ),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     'วิ่งกับใคร',
                     style: TextStyle(
-                      color: const Color.fromARGB(255, 0, 0, 0),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -193,82 +217,87 @@ class _AddRunUIState extends State<AddRunUI> {
                   controller: runPersonCtrl,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    hintText: 'เช่น เพื่อน...',
+                    hintText: 'เช่น เพื่อน, .....',
                   ),
                 ),
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.015,
+                  height: 20,
                 ),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     'ระยะทาง (กิโลเมตร)',
                     style: TextStyle(
-                      color: const Color.fromARGB(255, 0, 0, 0),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
                 TextField(
                   controller: runDistanceCtrl,
+                  keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    hintText: 'เช่น 5 , 10 , 15 ...',
+                    hintText: 'เช่น 5, 10, .....',
                   ),
                 ),
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.04,
+                  height: 30,
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    //upload รูป ไปยัง bucket และบันทึก ลง table
-                    //แต่ code มันยาว ขอทำ method ฃื่อ uploadAndSaveData ไว้ด้านบน
+                    // โค้ดอัปโหลดรูปไปยัง bucket และบันทึกข้อมูลลง table
+                    // แต่โค้ดมันยาว ขอไปทำเป็นเมธอดชื่อ uploadAndSaveData() ไว้ด้านบนแล้วเรียกใช้
                     uploadAndSaveData();
                   },
                   child: Text(
                     'บันทึกข้อมูล',
                     style: TextStyle(
                       color: Colors.white,
-                      //fontWeight: FontWeight.bold,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 24, 179, 10),
+                    backgroundColor: const Color.fromARGB(255, 3, 141, 49),
                     fixedSize: Size(
                       MediaQuery.of(context).size.width,
                       55.0,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                 ),
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.02,
+                  height: 15,
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(context);
+                    //เคลียหน้าจอให้เหมือนกับตอนที่พึ่งเปิดเข้ามา
+                    setState(() {
+                      imageBytes = null;
+                      imageFile = null;
+                      runWhereCtrl.clear();
+                      runPersonCtrl.clear();
+                      runDistanceCtrl.clear();
+                    });
                   },
                   child: Text(
                     'ยกเลิก',
                     style: TextStyle(
                       color: Colors.white,
-                      //fontWeight: FontWeight.bold,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 231, 40, 15),
+                    backgroundColor: const Color.fromARGB(255, 202, 72, 11),
                     fixedSize: Size(
                       MediaQuery.of(context).size.width,
                       55.0,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                 ),
